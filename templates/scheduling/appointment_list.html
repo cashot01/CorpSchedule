@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Meus Agendamentos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📋 Meus Agendamentos</h2>
+    <a href="{% url 'scheduling:appointment_create' %}" class="btn btn-primary">
+        + Novo Agendamento
+    </a>
+</div>
+
+{% if appointments %}
+<div class="row">
+    {% for appointment in appointments %}
+    <div class="col-md-6 mb-3">
+        <div class="card {% if appointment.status == 'cancelled' %}bg-light{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">{{ appointment.service.name }}</h5>
+                <p class="card-text">
+                    <strong>👤 Profissional:</strong> {{ appointment.professional.get_full_name }}<br>
+                    <strong>📅 Data:</strong> {{ appointment.scheduled_at|date:"d/m/Y" }}<br>
+                    <strong>⏰ Horário:</strong> {{ appointment.scheduled_at|time:"H:i" }}<br>
+                    <strong>💰 Valor:</strong> R$ {{ appointment.service.price }}<br>
+                    <strong>📊 Status:</strong> 
+                    <span class="badge 
+                        {% if appointment.status == 'confirmed' %}bg-success
+                        {% elif appointment.status == 'pending' %}bg-warning
+                        {% else %}bg-danger{% endif %}">
+                        {{ appointment.get_status_display }}
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    📭 Você não tem agendamentos ainda. 
+    <a href="{% url 'scheduling:appointment_create' %}">Crie um agora!</a>
+</div>
+{% endif %}
+{% endblock %}

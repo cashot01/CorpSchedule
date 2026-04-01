@@ -1,11 +1,24 @@
+# scheduling/views.py
 from django.views.generic import CreateView, ListView
 from django.urls import reverse_lazy
-from django.contrib.auth import get_user_model
-from core.mixins import RoleRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from services.appointment_service import AppointmentService
 from .models import Appointment, Service
+from accounts.models import Client, Professional
 
-User = get_user_model()
+class RoleRequiredMixin(LoginRequiredMixin):
+    """Mixin para verificar tipo de usuário"""
+    required_role = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.required_role == 'professional':
+            if not hasattr(request.user, 'professional'):
+                raise PermissionDenied("Acesso restrito a profissionais.")
+        elif self.required_role == 'client':
+            if not hasattr(request.user, 'client'):
+                raise PermissionDenied("Acesso restrito a clientes.")
+        return super().dispatch(request, *args, **kwargs)
 
 class AppointmentCreateView(RoleRequiredMixin, CreateView):
     model = Appointment
@@ -19,10 +32,20 @@ class AppointmentCreateView(RoleRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
-        # Instancia o Serviço de Negócio
+        # Determinar profissional e cliente
+        if hasattr(self.request.user, 'client'):
+            client = self.request.user.client
+            professional = Professional.objects.first()  # Simplificado para demo
+        elif hasattr(self.request.user, 'professional'):
+            professional = self.request.user.professional
+            client = Client.objects.first()  # Simplificado para demo
+        else:
+            form.add_error(None, "Usuário sem perfil válido")
+            return self.form_invalid(form)
+
         service_layer = AppointmentService(
-            professional=self.request.user.professional, # Ou lógica para escolher profissional
-            client=self.request.user.client,
+            professional=professional,
+            client=client,
             service=form.instance.service,
             scheduled_at=form.instance.scheduled_at
         )
@@ -40,7 +63,6 @@ class AppointmentListView(RoleRequiredMixin, ListView):
     context_object_name = 'appointments'
 
     def get_queryset(self):
-        # Polimorfismo: Client vê os seus, Professional vê os dele
         if hasattr(self.request.user, 'client'):
             return Appointment.objects.filter(client=self.request.user.client)
         elif hasattr(self.request.user, 'professional'):

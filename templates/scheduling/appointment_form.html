@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo Agendamento{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4>📅 Novo Agendamento</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_service" class="form-label">Serviço</label>
+                        {{ form.service }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_scheduled_at" class="form-label">Data e Horário</label>
+                        {{ form.scheduled_at }}
+                        <small class="text-muted">Horário comercial: 08h às 18h</small>
+                    </div>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-success">
+                        ✅ Confirmar Agendamento
+                    </button>
+                    <a href="{% url 'scheduling:appointment_list' %}" class="btn btn-secondary">
+                        ← Voltar
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
