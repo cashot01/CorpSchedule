@@ -119,3 +119,19 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# =============================================================================
+# 🔐 CONFIGURAÇÕES DE AUTENTICAÇÃO (Adicione no final do settings.py)
+# =============================================================================
+
+# Para onde redirecionar após login bem-sucedido
+LOGIN_REDIRECT_URL = 'scheduling:appointment_list'
+
+# Para onde redirecionar após logout
+LOGOUT_REDIRECT_URL = 'login'
+
+# URL da página de login (usada pelo @login_required)
+LOGIN_URL = 'login'
+
+# Mensagem para usuários não autenticados
+LOGIN_REQUIRED_MESSAGE = 'Por favor, faça login para acessar esta página.'
